@@ -6,15 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Patrick564/cards-board-golang/models"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type User struct {
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-}
 
 type CustomClaims struct {
 	Range string `json:"range"`
@@ -35,7 +30,7 @@ func RegisterRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := User{}
+	u := models.User{}
 
 	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {

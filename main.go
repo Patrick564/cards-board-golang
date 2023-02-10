@@ -1,40 +1,33 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"net/http"
 
-	"github.com/Patrick564/secret-message-wall/api"
-	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/Patrick564/cards-board-golang/api"
+	"github.com/Patrick564/cards-board-golang/models"
 )
 
-type CustomClaims struct {
-	Range string `json:"range"`
-	jwt.RegisteredClaims
-}
-
-func resolveLinkRoute(w http.ResponseWriter, _ *http.Request) {
-	jwt.Parse("", func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("aaaa")
-		}
-
-		return []byte(""), nil
-	})
-
-	fmt.Println("generate links admin")
-	io.WriteString(w, "generate links asdmin")
+type Env struct {
+	users interface {
+		Register() (models.User, error)
+	}
 }
 
 func main() {
 	mux := http.NewServeMux()
+	conn, err := models.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+	env := &Env{
+		users: models.UserModel{DB: conn.DB},
+	}
 
-	mux.HandleFunc("/register", api.RegisterRoute)
-	mux.HandleFunc("/:link", resolveLinkRoute)
+	mux.HandleFunc("/api/register", api.RegisterRoute)
+	// mux.HandleFunc("/:link", resolveLinkRoute)
 
-	err := http.ListenAndServe(":5555", mux)
+	err = http.ListenAndServe(":5555", mux)
 	if err != nil {
 		log.Fatal(err)
 	}
