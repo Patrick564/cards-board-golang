@@ -3,21 +3,14 @@ package models
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type Conn struct {
-	DB *pgx.Conn
-}
-
-func Connect() (Conn, error) {
-	dsn := ""
-	ctx := context.Background()
-
-	conn, err := pgx.Connect(ctx, dsn)
+func Connect(ctx context.Context, url string) (*pgxpool.Pool, error) {
+	conn, err := pgxpool.Connect(ctx, url)
 	if err != nil {
-		return Conn{}, err
+		return nil, err
 	}
 
-	return Conn{DB: conn}, nil
+	return conn, nil
 }

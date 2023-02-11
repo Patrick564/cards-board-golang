@@ -1,33 +1,44 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Patrick564/cards-board-golang/api"
 	"github.com/Patrick564/cards-board-golang/models"
+	"github.com/joho/godotenv"
 )
 
-type Env struct {
-	users interface {
-		Register() (models.User, error)
-	}
-}
-
 func main() {
-	mux := http.NewServeMux()
-	conn, err := models.Connect()
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal(err)
-	}
-	env := &Env{
-		users: models.UserModel{DB: conn.DB},
+		log.Fatal("Error to load .env file\n")
 	}
 
-	mux.HandleFunc("/api/register", api.RegisterRoute)
-	// mux.HandleFunc("/:link", resolveLinkRoute)
+	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	ctx := context.Background()
+	mux := http.NewServeMux()
 
-	err = http.ListenAndServe(":5555", mux)
+	conn, err := models.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatalf("Error to connect to database: %s\n", err.Error())
+	}
+	defer conn.Close()
+
+	log.Println("Connection to database is successfull")
+
+	env := &api.Env{
+		Users: models.UserModel{DB: conn, Ctx: ctx},
+	}
+
+	mux.HandleFunc("/api/register", env.Register)
+	mux.HandleFunc("/api/login", env.Login)
+
+	log.Printf("Start server in port %s\n", port)
+	err = http.ListenAndServe(port, mux)
 	if err != nil {
 		log.Fatal(err)
 	}
