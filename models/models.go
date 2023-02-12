@@ -18,8 +18,16 @@ type User struct {
 type Board struct {
 	Id        string    `json:"id"`
 	Name      string    `json:"name"`
-	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type CardsBoard struct {
+	BoardId        string    `json:"board_id"`
+	BoardName      string    `json:"board_name"`
+	BoardCreatedAt time.Time `json:"board_created_at"`
+	CardId         string    `json:"card_id"`
+	CardContent    string    `json:"card_content"`
+	CardCreatedAt  time.Time `json:"card_created_at"`
 }
 
 type UserModel struct {
@@ -36,10 +44,15 @@ func (u UserModel) Add(user User) error {
 	return nil
 }
 
+// FindOne
 func (u UserModel) Find(email, password string) (User, error) {
 	user := User{}
 
-	err := u.DB.QueryRow(u.Ctx, "SELECT id, email, password, created_at FROM users WHERE email=$1", email).Scan(&user.Id, &user.Email, &user.Password, &user.CreatedAt)
+	err := u.DB.QueryRow(
+		u.Ctx,
+		"SELECT id, email, password, created_at FROM users WHERE email = $1",
+		email,
+	).Scan(&user.Id, &user.Email, &user.Password, &user.CreatedAt)
 	if err != nil {
 		return User{}, err
 	}
@@ -61,10 +74,64 @@ func (b *BoardModel) Add(board Board) error {
 	return nil
 }
 
-func (b *BoardModel) Find(userId string) ([]Board, error) {
-	return nil, nil
+func (b *BoardModel) FindAll(email string) ([]Board, error) {
+	rows, err := b.DB.Query(
+		b.Ctx,
+		`SELECT boards.id, boards.name, boards.created_at
+			  FROM boards
+			  JOIN users ON boards.user_id = users.id
+			  WHERE users.email = $1;`,
+		email,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	boards := make([]Board, 0)
+
+	for rows.Next() {
+		b := Board{}
+		err := rows.Scan(b.Id, b.Name, b.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		boards = append(boards, b)
+	}
+
+	return boards, nil
 }
 
+func (b *BoardModel) FindOne(email, boardId string) ([]CardsBoard, error) {
+	rows, err := b.DB.Query(
+		b.Ctx,
+		`SELECT boards.id AS board_id, boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
+			  FROM boards
+			  JOIN users ON boards.user_id = users.id
+			  JOIN cards ON boards.id = cards.board_id
+			  WHERE users.email = $1 AND boards.id = $2;`,
+		email, boardId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	cardsBoard := make([]CardsBoard, 0)
+
+	for rows.Next() {
+		c := CardsBoard{}
+		err := rows.Scan(&c.BoardId, &c.BoardName, &c.BoardCreatedAt, &c.CardId, &c.CardContent, &c.CardCreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		cardsBoard = append(cardsBoard, c)
+	}
+
+	return cardsBoard, nil
+}
+
+// TODO: Create body to update a board name
 func (b *BoardModel) Update(board Board, userId string) error {
 	return nil
 }
