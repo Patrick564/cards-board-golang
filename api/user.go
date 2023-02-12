@@ -15,42 +15,54 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
-type Env struct {
+type UserEnv struct {
 	Users interface {
 		Add(user models.User) error
 		Find(email, password string) (models.User, error)
 	}
 }
 
-func (e *Env) Register(w http.ResponseWriter, r *http.Request) {
+func (env *UserEnv) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println("Loading route /api/register")
+	w.Header().Set("Content-Type", "application/json")
 
+	// Only POST method allowed
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(utils.CustomError{Message: "method not allowed"})
 		return
 	}
 
-	u := models.User{}
+	user := models.User{}
 
-	err := json.NewDecoder(r.Body).Decode(&u)
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
 		return
 	}
 
-	hash, _ := utils.HashAndSalt([]byte(u.Password))
-	u.Password = hash
+	hash, err := utils.HashAndSalt([]byte(user.Password))
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
+		return
+	}
+	user.Password = hash
 
-	e.Users.Add(u)
+	err = env.Users.Add(user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
 }
 
-func (e *Env) Login(w http.ResponseWriter, r *http.Request) {
+func (env *UserEnv) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("Loading route /api/login")
+	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -58,23 +70,23 @@ func (e *Env) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := models.User{}
+	user := models.User{}
 
-	err := json.NewDecoder(r.Body).Decode(&u)
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
 		return
 	}
 
-	q, err := e.Users.Find(u.Email, u.Password)
+	query, err := env.Users.Find(user.Email, user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
 		return
 	}
 
-	res, err := json.Marshal(q)
+	res, err := json.Marshal(query)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
 		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
@@ -82,6 +94,5 @@ func (e *Env) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
 }

@@ -15,6 +15,13 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
+type Board struct {
+	Id        string    `json:"id"`
+	Name      string    `json:"name"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type UserModel struct {
 	DB  *pgxpool.Pool
 	Ctx context.Context
@@ -43,4 +50,21 @@ func (u UserModel) Find(email, password string) (User, error) {
 	}
 
 	return user, nil
+}
+
+type BoardModel struct {
+	DB  *pgxpool.Pool
+	Ctx context.Context
+}
+
+func (b *BoardModel) Add(board Board) error {
+	return nil
+}
+
+func (b *BoardModel) Find(userId string) ([]Board, error) {
+	return nil, nil
+}
+
+func (b *BoardModel) Update(board Board, userId string) error {
+	return nil
 }

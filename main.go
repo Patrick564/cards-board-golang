@@ -30,12 +30,13 @@ func main() {
 
 	log.Println("Connection to database is successfull")
 
-	env := &api.Env{
+	userEnv := &api.UserEnv{
 		Users: models.UserModel{DB: conn, Ctx: ctx},
 	}
 
-	mux.HandleFunc("/api/register", env.Register)
-	mux.HandleFunc("/api/login", env.Login)
+	// User routes
+	mux.HandleFunc("/api/user/register", userEnv.Register)
+	mux.HandleFunc("/api/user/login", userEnv.Login)
 
 	log.Printf("Start server in port %s\n", port)
 	err = http.ListenAndServe(port, mux)
