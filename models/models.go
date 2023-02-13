@@ -19,6 +19,7 @@ type Board struct {
 	Id        string    `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
+	UserId    string    `json:"user_id,omitempty"`
 }
 
 type CardsBoard struct {
@@ -70,17 +71,29 @@ type BoardModel struct {
 	Ctx context.Context
 }
 
-func (b *BoardModel) Add(board Board) error {
+func (b BoardModel) Add(name, email string) error {
+	_, err := b.DB.Exec(
+		b.Ctx,
+		`INSERT INTO boards (name, user_id)
+		      SELECT $1, id
+			  FROM users
+			  WHERE email = $2`,
+		name, email,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (b *BoardModel) FindAll(email string) ([]Board, error) {
+func (b BoardModel) FindAll(email string) ([]Board, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,
 		`SELECT boards.id, boards.name, boards.created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
-			  WHERE users.email = $1;`,
+			  WHERE users.email = $1`,
 		email,
 	)
 	if err != nil {
@@ -92,7 +105,7 @@ func (b *BoardModel) FindAll(email string) ([]Board, error) {
 
 	for rows.Next() {
 		b := Board{}
-		err := rows.Scan(b.Id, b.Name, b.CreatedAt)
+		err := rows.Scan(&b.Id, &b.Name, &b.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -102,14 +115,14 @@ func (b *BoardModel) FindAll(email string) ([]Board, error) {
 	return boards, nil
 }
 
-func (b *BoardModel) FindOne(email, boardId string) ([]CardsBoard, error) {
+func (b BoardModel) FindOne(email, boardId string) ([]CardsBoard, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,
 		`SELECT boards.id AS board_id, boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
 			  JOIN cards ON boards.id = cards.board_id
-			  WHERE users.email = $1 AND boards.id = $2;`,
+			  WHERE users.email = $1 AND boards.id = $2`,
 		email, boardId,
 	)
 	if err != nil {
@@ -132,6 +145,6 @@ func (b *BoardModel) FindOne(email, boardId string) ([]CardsBoard, error) {
 }
 
 // TODO: Create body to update a board name
-func (b *BoardModel) Update(board Board, userId string) error {
+func (b BoardModel) Update(board Board, userId string) error {
 	return nil
 }

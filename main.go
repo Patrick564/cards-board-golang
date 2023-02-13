@@ -33,10 +33,17 @@ func main() {
 	userEnv := &api.UserEnv{
 		Users: models.UserModel{DB: conn, Ctx: ctx},
 	}
+	boardEnv := &api.BoardEnv{
+		Boards: models.BoardModel{DB: conn, Ctx: ctx},
+	}
 
 	// User routes
-	mux.HandleFunc("/api/user/register", userEnv.Register)
-	mux.HandleFunc("/api/user/login", userEnv.Login)
+	mux.HandleFunc("/api/users/register", userEnv.Register)
+	mux.HandleFunc("/api/users/login", userEnv.Login)
+
+	// Board routes
+	mux.HandleFunc("/api/boards", boardEnv.GetAllOrCreate)
+	mux.HandleFunc("/api/boards/id", boardEnv.FindById)
 
 	log.Printf("Start server in port %s\n", port)
 	err = http.ListenAndServe(port, mux)
