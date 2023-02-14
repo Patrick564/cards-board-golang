@@ -87,14 +87,14 @@ func (b BoardModel) Add(name, email string) error {
 	return nil
 }
 
-func (b BoardModel) FindAll(email string) ([]Board, error) {
+func (b BoardModel) FindAll(username string) ([]Board, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,
 		`SELECT boards.id, boards.name, boards.created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
-			  WHERE users.email = $1`,
-		email,
+			  WHERE users.username = $1`,
+		username,
 	)
 	if err != nil {
 		return nil, err

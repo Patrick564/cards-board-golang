@@ -9,6 +9,8 @@ import (
 
 	"github.com/Patrick564/cards-board-golang/api"
 	"github.com/Patrick564/cards-board-golang/models"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -20,7 +22,7 @@ func main() {
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	ctx := context.Background()
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 
 	conn, err := models.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -38,15 +40,15 @@ func main() {
 	}
 
 	// User routes
-	mux.HandleFunc("/api/users/register", userEnv.Register)
-	mux.HandleFunc("/api/users/login", userEnv.Login)
+	r.HandleFunc("/api/users/register", userEnv.Register)
+	r.HandleFunc("/api/users/login", userEnv.Login)
 
 	// Board routes
-	mux.HandleFunc("/api/boards", boardEnv.GetAllOrCreate)
-	mux.HandleFunc("/api/boards/id", boardEnv.FindById)
+	r.HandleFunc("/api/boards/{username}", boardEnv.GetAllOrCreate)
+	r.HandleFunc("/api/boards/{username}/{board_id}", boardEnv.FindById)
 
 	log.Printf("Start server in port %s\n", port)
-	err = http.ListenAndServe(port, mux)
+	err = http.ListenAndServe(port, r)
 	if err != nil {
 		log.Fatal(err)
 	}
