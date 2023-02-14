@@ -71,14 +71,14 @@ type BoardModel struct {
 	Ctx context.Context
 }
 
-func (b BoardModel) Add(name, email string) error {
+func (b BoardModel) Add(name, username string) error {
 	_, err := b.DB.Exec(
 		b.Ctx,
 		`INSERT INTO boards (name, user_id)
 		      SELECT $1, id
 			  FROM users
-			  WHERE email = $2`,
-		name, email,
+			  WHERE username = $2`,
+		name, username,
 	)
 	if err != nil {
 		return err
@@ -115,15 +115,15 @@ func (b BoardModel) FindAll(username string) ([]Board, error) {
 	return boards, nil
 }
 
-func (b BoardModel) FindOne(email, boardId string) ([]CardsBoard, error) {
+func (b BoardModel) FindOne(username, boardId string) ([]CardsBoard, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,
 		`SELECT boards.id AS board_id, boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
 			  JOIN cards ON boards.id = cards.board_id
-			  WHERE users.email = $1 AND boards.id = $2`,
-		email, boardId,
+			  WHERE users.username = $1 AND boards.id = $2`,
+		username, boardId,
 	)
 	if err != nil {
 		return nil, err

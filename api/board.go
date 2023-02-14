@@ -2,13 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"strings"
 
 	"github.com/Patrick564/cards-board-golang/models"
 	"github.com/Patrick564/cards-board-golang/utils"
+	"github.com/go-chi/chi/v5"
 )
 
 type BoardEnv struct {
@@ -20,45 +18,57 @@ type BoardEnv struct {
 	}
 }
 
-func (env *BoardEnv) GetAllOrCreate(w http.ResponseWriter, r *http.Request) {
-	log.Print("Loading route /api/boards/{username} \n")
+func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-	path := strings.TrimPrefix(r.URL.Path, "/api/boards/")
+	username := chi.URLParam(r, "username")
 
-	if r.Method == http.MethodGet {
-		// username := strings.TrimSuffix(path, "/")
-		username := r.URL.Path[len("/api/boards/"):]
-		fmt.Println(username)
-
-		boards, err := env.Boards.FindAll("testing")
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(boards)
+	var boardName string
+	err := json.NewDecoder(r.Body).Decode(&boardName)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
 		return
 	}
 
-	if r.Method == http.MethodPost {
-		params := strings.Split(strings.TrimSuffix(path, "/"), "/")
-
-		fmt.Println(params)
-
-		// env.Boards.Add(params[1], params[0])
-
-		w.WriteHeader(http.StatusCreated)
+	err = env.Boards.Add(boardName, username)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusMethodNotAllowed)
-	json.NewEncoder(w).Encode(utils.CustomError{Message: "method not allowed"})
+	w.WriteHeader(http.StatusCreated)
 }
 
-func (env *BoardEnv) FindById(w http.ResponseWriter, r *http.Request) {
-	cards, _ := env.Boards.FindOne("testing@gmail.com", "20b5d21f-e292-4db2-8baa-b7e850854fae")
+func (env *BoardEnv) GetAll(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	username := chi.URLParam(r, "username")
+	boards, err := env.Boards.FindAll(username)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(boards)
+}
+
+func (env *BoardEnv) GetOne(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	username := chi.URLParam(r, "username")
+	boardId := chi.URLParam(r, "board_id")
+
+	cards, err := env.Boards.FindOne(username, boardId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		json.NewEncoder(w).Encode(utils.CustomError{Message: err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cards)
 }

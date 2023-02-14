@@ -11,6 +11,7 @@ import (
 	"github.com/Patrick564/cards-board-golang/models"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 )
 
@@ -39,13 +40,22 @@ func main() {
 		Boards: models.BoardModel{DB: conn, Ctx: ctx},
 	}
 
-	// User routes
-	r.HandleFunc("/api/users/register", userEnv.Register)
-	r.HandleFunc("/api/users/login", userEnv.Login)
+	// Middlewares
+	r.Use(middleware.Logger)
 
-	// Board routes
-	r.HandleFunc("/api/boards/{username}", boardEnv.GetAllOrCreate)
-	r.HandleFunc("/api/boards/{username}/{board_id}", boardEnv.FindById)
+	r.Route("/api/users", func(r chi.Router) {
+		r.Post("/login", userEnv.Login)
+
+		r.Post("/register", userEnv.Register)
+	})
+
+	r.Route("/api/boards", func(r chi.Router) {
+		r.Get("/{username}", boardEnv.GetAll)
+		r.Post("/{username}", boardEnv.Create)
+
+		r.Get("/{username}/{board_id}", boardEnv.GetOne)
+		r.Post("/{username}/{board_id}", boardEnv.GetOne)
+	})
 
 	log.Printf("Start server in port %s\n", port)
 	err = http.ListenAndServe(port, r)
