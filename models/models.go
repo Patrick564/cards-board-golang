@@ -145,6 +145,28 @@ func (b BoardModel) FindOne(username, boardId string) ([]CardsBoard, error) {
 }
 
 // TODO: Create body to update a board name
-func (b BoardModel) Update(board Board, userId string) error {
+func (b BoardModel) Update(newName, id string) error {
+	_, err := b.DB.Exec(
+		b.Ctx,
+		"UPDATE boards SET name = $1 WHERE id = $2",
+		newName, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b BoardModel) Delete(id string) error {
+	_, err := b.DB.Exec(
+		b.Ctx,
+		"DELETE FROM boards WHERE id = $1",
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

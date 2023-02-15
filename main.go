@@ -54,7 +54,8 @@ func main() {
 		r.Post("/{username}", boardEnv.Create)
 
 		r.Get("/{username}/{board_id}", boardEnv.GetOne)
-		r.Post("/{username}/{board_id}", boardEnv.GetOne)
+		r.Patch("/{username}/{board_id}", boardEnv.Update)
+		r.Delete("/{username}/{board_id}", boardEnv.Delete)
 	})
 
 	log.Printf("Start server in port %s\n", port)
