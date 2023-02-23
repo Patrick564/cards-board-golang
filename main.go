@@ -39,6 +39,9 @@ func main() {
 	boardEnv := &api.BoardEnv{
 		Boards: models.BoardModel{DB: conn, Ctx: ctx},
 	}
+	cardEnv := &api.CardEnv{
+		Cards: models.CardModel{DB: conn, Ctx: ctx},
+	}
 
 	// Middlewares
 	r.Use(middleware.Logger)
@@ -56,6 +59,11 @@ func main() {
 		r.Get("/{username}/{board_id}", boardEnv.GetOne)
 		r.Patch("/{username}/{board_id}", boardEnv.Update)
 		r.Delete("/{username}/{board_id}", boardEnv.Delete)
+	})
+
+	r.Route("/api/cards", func(r chi.Router) {
+		r.Get("/{username}", cardEnv.GetAll)
+		r.Post("/{username}", cardEnv.Create)
 	})
 
 	log.Printf("Start server in port %s\n", port)
