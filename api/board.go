@@ -16,10 +16,10 @@ type CreateBoard struct {
 type BoardEnv struct {
 	Boards interface {
 		Add(name, email string) error
+		Delete(id string) error
 		FindAll(username string) ([]models.Board, error)
 		FindOne(email, boardId string) ([]models.CardsBoard, error)
 		Update(newName, id string) error
-		Delete(id string) error
 	}
 }
 
