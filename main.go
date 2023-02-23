@@ -56,6 +56,8 @@ func main() {
 		r.Get("/{username}", boardEnv.GetAll)
 		r.Post("/{username}", boardEnv.Create)
 
+		// r.Post("/{board_id}", boardEnv.GetOne)
+
 		r.Get("/{username}/{board_id}", boardEnv.GetOne)
 		r.Patch("/{username}/{board_id}", boardEnv.Update)
 		r.Delete("/{username}/{board_id}", boardEnv.Delete)
@@ -64,6 +66,10 @@ func main() {
 	r.Route("/api/cards", func(r chi.Router) {
 		r.Get("/{username}", cardEnv.GetAll)
 		r.Post("/{username}", cardEnv.Create)
+
+		// r.Post("/{card_id}", cardEnv.Create)
+
+		// r.Get("/{board_id}", cardEnv.GetAllBoard)
 	})
 
 	log.Printf("Start server in port %s\n", port)

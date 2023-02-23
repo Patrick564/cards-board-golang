@@ -5,7 +5,13 @@ import (
 	"net/http"
 
 	"github.com/Patrick564/cards-board-golang/models"
+	"github.com/go-chi/chi/v5"
 )
+
+type CreateCard struct {
+	Content string `json:"content"`
+	BoardId string `json:"board_id"`
+}
 
 type CardEnv struct {
 	Cards interface {
@@ -21,13 +27,43 @@ type CardEnv struct {
 func (env *CardEnv) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	env.Cards.Add("testing", "9f4be1e0-96cc-4d97-b478-a7eaa7e917f1", "card testing")
+	username := chi.URLParam(r, "username")
+	card := CreateCard{}
+
+	err := json.NewDecoder(r.Body).Decode(&card)
+	if err != nil {
+		return
+	}
+
+	err = env.Cards.Add(username, card.BoardId, card.Content)
+	if err != nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (env *CardEnv) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	cards, err := env.Cards.FindAllByUsername("testing")
+	username := chi.URLParam(r, "username")
+
+	cards, err := env.Cards.FindAllByUsername(username)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(cards)
+}
+
+func (env *CardEnv) GetAllBoard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	boardId := chi.URLParam(r, "board_id")
+
+	cards, err := env.Cards.FindAllByBoardId(boardId)
 	if err != nil {
 		return
 	}

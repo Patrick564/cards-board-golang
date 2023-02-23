@@ -10,6 +10,7 @@ import (
 
 type User struct {
 	Id        string    `json:"id,omitempty"`
+	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
@@ -31,7 +32,6 @@ type Card struct {
 }
 
 type CardsBoard struct {
-	BoardId        string    `json:"board_id"`
 	BoardName      string    `json:"board_name"`
 	BoardCreatedAt time.Time `json:"board_created_at"`
 	CardId         string    `json:"card_id"`
@@ -45,7 +45,12 @@ type UserModel struct {
 }
 
 func (u UserModel) Add(user User) error {
-	_, err := u.DB.Exec(u.Ctx, "INSERT INTO users (email, password) VALUES ($1, $2)", user.Email, user.Password)
+	_, err := u.DB.Exec(
+		u.Ctx,
+		`INSERT INTO users (username, email, password)
+			  VALUES ($1, $2, $3)`,
+		user.Username, user.Email, user.Password,
+	)
 	if err != nil {
 		return err
 	}
@@ -59,9 +64,11 @@ func (u UserModel) Find(email, password string) (User, error) {
 
 	err := u.DB.QueryRow(
 		u.Ctx,
-		"SELECT id, email, password, created_at FROM users WHERE email = $1",
+		`SELECT id, username, email, password, created_at
+		      FROM users
+			  WHERE email = $1`,
 		email,
-	).Scan(&user.Id, &user.Email, &user.Password, &user.CreatedAt)
+	).Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.CreatedAt)
 	if err != nil {
 		return User{}, err
 	}
@@ -126,7 +133,7 @@ func (b BoardModel) FindAll(username string) ([]Board, error) {
 func (b BoardModel) FindOne(username, boardId string) ([]CardsBoard, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,
-		`SELECT boards.id AS board_id, boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
+		`SELECT boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
 			  JOIN cards ON boards.id = cards.board_id
@@ -142,7 +149,7 @@ func (b BoardModel) FindOne(username, boardId string) ([]CardsBoard, error) {
 
 	for rows.Next() {
 		c := CardsBoard{}
-		err := rows.Scan(&c.BoardId, &c.BoardName, &c.BoardCreatedAt, &c.CardId, &c.CardContent, &c.CardCreatedAt)
+		err := rows.Scan(&c.BoardName, &c.BoardCreatedAt, &c.CardId, &c.CardContent, &c.CardCreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -229,7 +236,30 @@ func (c CardModel) FindAllByUsername(username string) ([]Card, error) {
 }
 
 func (c CardModel) FindAllByBoardId(boardId string) ([]Card, error) {
-	return nil, nil
+	rows, err := c.DB.Query(
+		c.Ctx,
+		`SELECT id, content, created_at, user_id
+			  FROM cards
+			  WHERE board_id = $1`,
+		boardId,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	cards := make([]Card, 0)
+
+	for rows.Next() {
+		c := Card{}
+		err := rows.Scan(&c.Id, &c.Content, &c.CreatedAt, &c.UserId)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, c)
+	}
+
+	return cards, nil
 }
 
 func (c CardModel) FindOne(id string) (Card, error) {
