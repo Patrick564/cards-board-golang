@@ -16,6 +16,7 @@ type CreateBoard struct {
 type BoardEnv struct {
 	Boards interface {
 		Add(name, email string) error
+		AddCard(content, username, boardId string) error
 		Delete(id string) error
 		FindAll(username string) ([]models.Board, error)
 		FindOne(email, boardId string) ([]models.CardsBoard, error)
@@ -56,7 +57,25 @@ func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO
-func (env *BoardEnv) CreateCard(w http.ResponseWriter, r *http.Request) {}
+func (env *BoardEnv) CreateCard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	username := chi.URLParam(r, "username")
+	boardId := chi.URLParam(r, "board_id")
+
+	var content string
+	err := json.NewDecoder(r.Body).Decode(&content)
+	if err != nil {
+		return
+	}
+
+	err = env.Boards.AddCard(content, username, boardId)
+	if err != nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
 
 // ShowAccount godoc
 //

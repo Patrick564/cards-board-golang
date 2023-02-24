@@ -102,6 +102,22 @@ func (b BoardModel) Add(name, username string) error {
 	return nil
 }
 
+func (b BoardModel) AddCard(content, username, boardId string) error {
+	_, err := b.DB.Exec(
+		b.Ctx,
+		`INSERT INTO cards (content, user_id, board_id)
+		      SELECT $1, users.id, $2
+              FROM users
+              WHERE username = $3`,
+		content, boardId, username,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (b BoardModel) FindAll(username string) ([]Board, error) {
 	rows, err := b.DB.Query(
 		b.Ctx,

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS boards (
 
 CREATE TABLE IF NOT EXISTS cards (
   id         UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-  owner      STRING(100) NOT NULL DEFAULT 'anonymous',
+  creator    STRING(100) NOT NULL DEFAULT 'anonymous',
   content    STRING(250) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(),
   user_id    UUID NOT NULL REFERENCES users (id) ON UPDATE CASCADE ON DELETE CASCADE,

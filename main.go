@@ -25,8 +25,8 @@ import (
 //	@host		localhost:5555
 //	@BasePath	/api
 
-//	@externalDocs.description	OpenAPI
-//	@externalDocs.url			https://swagger.io/resources/open-api/
+// @externalDocs.description	OpenAPI
+// @externalDocs.url			https://swagger.io/resources/open-api/
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -86,10 +86,8 @@ func main() {
 		r.Get("/", cardEnv.GetAll)
 
 		r.Get("/{card_id}", cardEnv.GetOne)
-
-		r.Get("/{board_id}", cardEnv.GetAllBoard)
-		r.Patch("/{board_id}", cardEnv.Update)
-		r.Delete("/{board_id}", cardEnv.Delete)
+		r.Patch("/{card_id}", cardEnv.Update)
+		r.Delete("/{card_id}", cardEnv.Delete)
 	})
 
 	log.Printf("Start server in port %s\n", port)
