@@ -1,0 +1,156 @@
+basePath: /api
+definitions:
+  api.CreateBoard:
+    properties:
+      name:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:5555
+info:
+  contact: {}
+  description: API documentation.
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "0.5"
+paths:
+  /api/{username}/boards:
+    get:
+      consumes:
+      - application/json
+      description: get all boards by username
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBoard'
+      responses:
+        "200":
+          description: OK
+      summary: Get all boards
+      tags:
+      - boards
+    post:
+      consumes:
+      - application/json
+      description: create a new board
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBoard'
+      responses:
+        "200":
+          description: OK
+      summary: Create board
+      tags:
+      - boards
+  /api/{username}/boards/{board_id}:
+    delete:
+      consumes:
+      - application/json
+      description: get all boards by username
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBoard'
+      responses:
+        "200":
+          description: OK
+      summary: Get all boards
+      tags:
+      - boards
+    get:
+      consumes:
+      - application/json
+      description: get all boards by username
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBoard'
+      responses:
+        "200":
+          description: OK
+      summary: Get all boards
+      tags:
+      - boards
+    patch:
+      consumes:
+      - application/json
+      description: get all boards by username
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateBoard'
+      responses:
+        "200":
+          description: OK
+      summary: Get all boards
+      tags:
+      - boards
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Login with email and password
+      tags:
+      - accounts
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: post a new account
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: OK
+      summary: Register an account
+      tags:
+      - accounts
+swagger: "2.0"

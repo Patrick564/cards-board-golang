@@ -23,6 +23,15 @@ type BoardEnv struct {
 	}
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Create board
+//	@Description	create a new board
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards  [post]
 func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -46,10 +55,23 @@ func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// TODO
+func (env *BoardEnv) CreateCard(w http.ResponseWriter, r *http.Request) {}
+
+// ShowAccount godoc
+//
+//	@Summary		Get all boards
+//	@Description	get all boards by username
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards [get]
 func (env *BoardEnv) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	username := chi.URLParam(r, "username")
+
 	boards, err := env.Boards.FindAll(username)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -61,6 +83,15 @@ func (env *BoardEnv) GetAll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(boards)
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Get all boards
+//	@Description	get all boards by username
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards/{board_id}  [get]
 func (env *BoardEnv) GetOne(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -78,6 +109,15 @@ func (env *BoardEnv) GetOne(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cards)
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Get all boards
+//	@Description	get all boards by username
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards/{board_id}  [patch]
 func (env *BoardEnv) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -101,6 +141,15 @@ func (env *BoardEnv) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Get all boards
+//	@Description	get all boards by username
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards/{board_id}  [delete]
 func (env *BoardEnv) Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

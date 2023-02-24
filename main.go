@@ -10,11 +10,23 @@ import (
 	"github.com/Patrick564/cards-board-golang/api"
 	"github.com/Patrick564/cards-board-golang/models"
 
+	_ "github.com/Patrick564/cards-board-golang/docs"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+//	@title			Swagger Example API
+//	@version		0.5
+//	@description	API documentation.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@host		localhost:5555
+//	@BasePath	/api
+
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			https://swagger.io/resources/open-api/
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -46,30 +58,38 @@ func main() {
 	// Middlewares
 	r.Use(middleware.Logger)
 
-	r.Route("/api/users", func(r chi.Router) {
+	// Swagger doc
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:5555/swagger/doc.json"),
+	))
+
+	r.Route("/api/auth", func(r chi.Router) {
 		r.Post("/login", userEnv.Login)
 
 		r.Post("/register", userEnv.Register)
 	})
 
-	r.Route("/api/boards", func(r chi.Router) {
-		r.Get("/{username}", boardEnv.GetAll)
-		r.Post("/{username}", boardEnv.Create)
+	// r.Route("/api/{username}", func(r chi.Router) {})
 
-		// r.Post("/{board_id}", boardEnv.GetOne)
+	r.Route("/api/{username}/boards", func(r chi.Router) {
+		r.Get("/", boardEnv.GetAll)
+		r.Post("/", boardEnv.Create)
 
-		r.Get("/{username}/{board_id}", boardEnv.GetOne)
-		r.Patch("/{username}/{board_id}", boardEnv.Update)
-		r.Delete("/{username}/{board_id}", boardEnv.Delete)
+		r.Get("/{board_id}", boardEnv.GetOne)
+		r.Post("/{board_id}", boardEnv.CreateCard)
+		r.Patch("/{board_id}", boardEnv.Update)
+		r.Delete("/{board_id}", boardEnv.Delete)
 	})
 
-	r.Route("/api/cards", func(r chi.Router) {
-		r.Get("/{username}", cardEnv.GetAll)
-		r.Post("/{username}", cardEnv.Create)
+	// private all
+	r.Route("/api/{username}/cards", func(r chi.Router) {
+		r.Get("/", cardEnv.GetAll)
 
-		// r.Post("/{card_id}", cardEnv.Create)
+		r.Get("/{card_id}", cardEnv.GetOne)
 
-		// r.Get("/{board_id}", cardEnv.GetAllBoard)
+		r.Get("/{board_id}", cardEnv.GetAllBoard)
+		r.Patch("/{board_id}", cardEnv.Update)
+		r.Delete("/{board_id}", cardEnv.Delete)
 	})
 
 	log.Printf("Start server in port %s\n", port)

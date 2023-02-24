@@ -71,3 +71,10 @@ func (env *CardEnv) GetAllBoard(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(cards)
 }
+
+// TODO
+func (env *CardEnv) GetOne(w http.ResponseWriter, r *http.Request) {}
+
+func (env *CardEnv) Update(w http.ResponseWriter, r *http.Request) {}
+
+func (env *CardEnv) Delete(w http.ResponseWriter, r *http.Request) {}

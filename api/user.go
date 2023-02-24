@@ -15,6 +15,15 @@ type UserEnv struct {
 	}
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Register an account
+//	@Description	post a new account
+//	@Tags			accounts
+//	@Accept			json
+//	@Param			request	body	models.User	true	"query params"
+//	@Success		200
+//	@Router			/api/auth/register  [post]
 func (env *UserEnv) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -45,6 +54,16 @@ func (env *UserEnv) Register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// ShowAccount godoc
+//
+//	@Summary		Login with email and password
+//	@Description	login
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		models.User	true	"query params"
+//	@Success		200		{object}	models.User
+//	@Router			/api/auth/login  [post]
 func (env *UserEnv) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
