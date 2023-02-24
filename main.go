@@ -58,7 +58,7 @@ func main() {
 	// Middlewares
 	r.Use(middleware.Logger)
 
-	// Swagger doc
+	// Swagger documentation
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:5555/swagger/doc.json"),
 	))

@@ -278,14 +278,45 @@ func (c CardModel) FindAllByBoardId(boardId string) ([]Card, error) {
 	return cards, nil
 }
 
-func (c CardModel) FindOne(id string) (Card, error) {
-	return Card{}, nil
+func (c CardModel) FindOne(username, id string) (Card, error) {
+	card := Card{}
+
+	err := c.DB.QueryRow(
+		c.Ctx,
+		`SELECT id, content, board_id
+			  FROM cards
+			  WHERE id = $1`,
+		id,
+	).Scan(&card.Id, &card.Content, &card.BoardId)
+	if err != nil {
+		return Card{}, err
+	}
+
+	return card, nil
 }
 
-func (c CardModel) Update(id string) error {
+func (c CardModel) Update(content, id string) error {
+	_, err := c.DB.Exec(
+		c.Ctx,
+		"UPDATE cards SET content = $1 WHERE id = $2",
+		content, id,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c CardModel) Delete(id string) error {
+	_, err := c.DB.Exec(
+		c.Ctx,
+		"DELETE FROM cards WHERE id = $1",
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
