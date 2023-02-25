@@ -15,23 +15,25 @@ type CreateBoard struct {
 
 type BoardEnv struct {
 	Boards interface {
-		Add(name, email string) error
+		Add(name, username string) error
 		AddCard(content, username, boardId string) error
-		Delete(id string) error
 		FindAll(username string) ([]models.Board, error)
-		FindOne(email, boardId string) ([]models.CardsBoard, error)
+		FindOne(username, id string) ([]models.CardsBoard, error)
 		Update(newName, id string) error
+		Delete(id string) error
 	}
 }
 
 // ShowAccount godoc
 //
 //	@Summary		Create board
-//	@Description	create a new board
+//	@Description    create a new board
 //	@Tags			boards
 //	@Accept			json
 //	@Param			request	body	CreateBoard	true	"query params"
-//	@Success		200
+//	@Success		201 {json}
+//	@Failure		400 {json}
+//	@Failure		502 {json}
 //	@Router			/api/{username}/boards  [post]
 func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -56,7 +58,15 @@ func (env *BoardEnv) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// TODO
+// ShowAccount godoc
+//
+//	@Summary		Create board
+//	@Description	create a new board
+//	@Tags			boards
+//	@Accept			json
+//	@Param			request	body	CreateBoard	true	"query params"
+//	@Success		200
+//	@Router			/api/{username}/boards/{board_id}  [post]
 func (env *BoardEnv) CreateCard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
