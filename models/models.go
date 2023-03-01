@@ -21,15 +21,7 @@ type Card struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UserId    string    `json:"user_id,omitempty"`
-	BoardId   string    `json:"board_id"`
-}
-
-type CardsBoard struct {
-	BoardName      string    `json:"board_name"`
-	BoardCreatedAt time.Time `json:"board_created_at"`
-	CardId         string    `json:"card_id"`
-	CardContent    string    `json:"card_content"`
-	CardCreatedAt  time.Time `json:"card_created_at"`
+	BoardId   string    `json:"board_id,omitempty"`
 }
 
 type UserModel struct {

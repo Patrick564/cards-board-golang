@@ -15,6 +15,15 @@ type Board struct {
 	UserId    string    `json:"user_id,omitempty"`
 }
 
+type CardsBoard struct {
+	BoardName      string    `json:"board_name"`
+	BoardCreatedAt time.Time `json:"created_at"`
+	Cards          []Card    `json:"cards,omitempty"`
+	// CardId         string    `json:"card_id"`
+	// CardContent    string    `json:"card_content"`
+	// CardCreatedAt  time.Time `json:"card_created_at"`
+}
+
 // Allow instanciate the database and context.
 type BoardModel struct {
 	DB  *pgxpool.Pool
@@ -85,10 +94,23 @@ func (m BoardModel) FindAll(username string) ([]Board, error) {
 }
 
 // Select one board by id and username and it's cards.
-func (m BoardModel) FindOne(username, id string) ([]CardsBoard, error) {
+func (m BoardModel) FindOne(username, id string) (CardsBoard, error) {
+	cardsBoard := CardsBoard{Cards: make([]Card, 0)}
+
+	err := m.DB.QueryRow(
+		m.Ctx,
+		`SELECT name, created_at
+			  FROM boards
+			  WHERE id = $1`,
+		id,
+	).Scan(&cardsBoard.BoardName, &cardsBoard.BoardCreatedAt)
+	if err != nil {
+		return CardsBoard{}, err
+	}
+
 	rows, err := m.DB.Query(
 		m.Ctx,
-		`SELECT boards.name AS board_name, boards.created_at AS board_created_at, cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
+		`SELECT cards.id AS card_id, cards.content AS card_content, cards.created_at AS card_created_at
 			  FROM boards
 			  JOIN users ON boards.user_id = users.id
 			  JOIN cards ON boards.id = cards.board_id
@@ -96,19 +118,17 @@ func (m BoardModel) FindOne(username, id string) ([]CardsBoard, error) {
 		username, id,
 	)
 	if err != nil {
-		return nil, err
+		return CardsBoard{}, err
 	}
 	defer rows.Close()
 
-	cardsBoard := make([]CardsBoard, 0)
-
 	for rows.Next() {
-		c := CardsBoard{}
-		err := rows.Scan(&c.BoardName, &c.BoardCreatedAt, &c.CardId, &c.CardContent, &c.CardCreatedAt)
+		c := Card{}
+		err := rows.Scan(&c.Id, &c.Content, &c.CreatedAt)
 		if err != nil {
-			return nil, err
+			return CardsBoard{}, err
 		}
-		cardsBoard = append(cardsBoard, c)
+		cardsBoard.Cards = append(cardsBoard.Cards, c)
 	}
 
 	return cardsBoard, nil
