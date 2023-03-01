@@ -30,7 +30,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error to load .env file\n")
+		log.Print("Env file not found.\n")
 	}
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
