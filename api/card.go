@@ -15,9 +15,7 @@ type CreateCard struct {
 
 type CardEnv struct {
 	Cards interface {
-		Add(username, boardId, content string) error
 		FindAllByUsername(username string) ([]models.Card, error)
-		FindAllByBoardId(boardId string) ([]models.Card, error)
 		FindOne(username, id string) (models.Card, error)
 		Update(username, id string) error
 		Delete(id string) error
